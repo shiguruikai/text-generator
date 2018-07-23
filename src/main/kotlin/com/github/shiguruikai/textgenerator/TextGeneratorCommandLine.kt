@@ -88,7 +88,7 @@ object TextGeneratorCommandLine {
         }
 
         if (inputTokenPath != null) {
-            val tokes = deserialize<List<String>>(inputTokenPath)
+            val tokes = deserialize<List<Token>>(inputTokenPath)
             writeGeneratedText(tokes, chainSize, limit, outputStream.value)
             exitProcess(0)
         }
@@ -149,12 +149,12 @@ object TextGeneratorCommandLine {
         """.trimIndent())
     }
 
-    private fun writeGeneratedText(tokens: List<String>, chainSize: Int, limit: Int, output: OutputStream) {
+    private fun writeGeneratedText(tokens: List<Token>, chainSize: Int, limit: Int, output: OutputStream) {
         output.bufferedWriter().use { writer ->
             generateMarkovChainSequence(tokens, chainSize)
                     .take(limit)
                     .forEach {
-                        writer.write(it)
+                        writer.write(it.surface)
                     }
 
             writer.newLine()

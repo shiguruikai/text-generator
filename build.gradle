@@ -1,5 +1,8 @@
+import com.github.spotbugs.SpotBugsTask
+
 plugins {
     id 'application'
+    id 'com.github.spotbugs' version '1.6.2'
     id 'org.jetbrains.kotlin.jvm' version '1.2.51'
 }
 
@@ -28,6 +31,13 @@ compileTestKotlin {
 kotlin {
     experimental {
         coroutines "enable"
+    }
+}
+
+tasks.withType(SpotBugsTask) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
     }
 }
 

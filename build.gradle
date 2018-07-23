@@ -1,0 +1,47 @@
+plugins {
+    id 'application'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.51'
+}
+
+group 'com.github.shiguruikai'
+version '0.1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven{
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "com.worksap.nlp:sudachi:0.1.1-SNAPSHOT"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
+
+mainClassName = 'com.github.shiguruikai.textgenerator.TextGeneratorCommandLine'
+
+// Sudachiで発生するJVMの警告を回避するオプション
+applicationDefaultJvmArgs = ['--add-opens=java.base/java.nio=ALL-UNNAMED',
+                             '--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED']
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    from configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+}
+
+

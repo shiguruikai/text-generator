@@ -4,6 +4,12 @@
 
 形態素解析器は [Sudachi](https://github.com/WorksApplications/Sudachi) を使用。
 
+## 使い方
+
+形態素解析に必要なSudachiの辞書ファイル `system_full.dic` は自前でビルドするか、
+[リポジトリ](https://oss.sonatype.org/content/repositories/snapshots/com/worksap/nlp/sudachi/0.1.1-SNAPSHOT/) から
+`sudachi-{バージョンID}-dictionary-full.zip` をダウンロード＆解凍して入手する。
+
 ```text 
 Usage:  text-generator [options]
             (標準入力から生成する場合)

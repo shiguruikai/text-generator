@@ -84,7 +84,10 @@ object TextGeneratorCommandLine {
                     outputTokenPath = argsIter.next().toPath()
                 }
                 else -> {
-                    require(!arg.startsWith('-')) { "不明なオプション $arg" }
+                    if (arg.startsWith('-')) {
+                        System.err.println("${ANSI_RED}error:$ANSI_RESET 不明なオプション $arg")
+                        exitProcess(1)
+                    }
                     argsIter.previous()
                     break@loop
                 }

@@ -18,8 +18,7 @@ fun createTokenList(tokenizer: Tokenizer, mode: Tokenizer.SplitMode, inputStream
 }
 
 fun <T> createMarkovChain(src: List<T>, chainSize: Int = 3): Map<List<T>, List<T>> {
-    require(chainSize >= 2)
-    require(chainSize <= src.size)
+    require(chainSize in 2..src.size) { "チェーンサイズが範囲外です。" }
 
     val chain = mutableMapOf<List<T>, MutableList<T>>()
     val keySize = chainSize - 1

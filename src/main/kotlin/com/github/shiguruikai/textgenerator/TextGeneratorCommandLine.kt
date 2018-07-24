@@ -3,6 +3,7 @@ package com.github.shiguruikai.textgenerator
 import com.worksap.nlp.sudachi.DictionaryFactory
 import com.worksap.nlp.sudachi.SudachiCommandLine
 import com.worksap.nlp.sudachi.Tokenizer.SplitMode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.OutputStream
@@ -152,6 +153,7 @@ object TextGeneratorCommandLine {
         """.trimIndent())
     }
 
+    @SuppressFBWarnings("DM_EXIT")
     private fun checkRequiredParameter(argsIterator: Iterator<String>, name: String) {
         if (!argsIterator.hasNext()) {
             System.err.println("${ANSI_RED}error:$ANSI_RESET オプションには引数が必要です $name")

@@ -18,7 +18,7 @@ fun createTokenList(tokenizer: Tokenizer, mode: Tokenizer.SplitMode, inputStream
 }
 
 fun <T> createMarkovChain(src: List<T>, chainSize: Int = 3): Map<List<T>, List<T>> {
-    require(chainSize in 2..src.size) { "チェーンサイズが範囲外です。" }
+    require(chainSize in 2..src.size) { "chainSize out of range: $chainSize" }
 
     val chain = mutableMapOf<List<T>, MutableList<T>>()
     val keySize = chainSize - 1
@@ -33,7 +33,6 @@ fun <T> createMarkovChain(src: List<T>, chainSize: Int = 3): Map<List<T>, List<T
 
 fun <T : Any> generateMarkovChainSequence(src: List<T>, chainSize: Int = 3, random: Random = Random()): Sequence<T> {
     if (src.isEmpty()) return emptySequence()
-    if (src.size == 1) return generateSequence { src.single() }
 
     val chain = createMarkovChain(src, chainSize)
     val key = LinkedList(chain.keys.first())

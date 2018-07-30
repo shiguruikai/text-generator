@@ -39,6 +39,14 @@ object TextGeneratorCommandLine {
             listOf("--help")
         }.listIterator()
 
+        @SuppressFBWarnings("DM_EXIT")
+        fun checkRequiredParameter(name: String) {
+            if (!argsIter.hasNext()) {
+                System.err.println("${ANSI_RED}error:$ANSI_RESET オプションには引数が必要です $name")
+                exitProcess(1)
+            }
+        }
+
         loop@ while (argsIter.hasNext()) {
             val arg = argsIter.next()
             when (arg) {
@@ -47,19 +55,19 @@ object TextGeneratorCommandLine {
                     exitProcess(0)
                 }
                 "-t", "-token" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     inputTokenPath = argsIter.next().toPath()
                 }
                 "-s", "--settings" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     settings = argsIter.next().toPath().toFile().readText()
                 }
                 "-d", "--dic-dir" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     dicDirPath = argsIter.next().toPath()
                 }
                 "-m", "--mode" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     mode = when (argsIter.next()) {
                         "a", "A" -> SplitMode.A
                         "b", "B" -> SplitMode.B
@@ -67,20 +75,20 @@ object TextGeneratorCommandLine {
                     }
                 }
                 "-l", "--limit" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     limit = max(0, argsIter.next().toInt())
                 }
                 "-c", "--chain-size" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     chainSize = argsIter.next().toInt()
                 }
                 "-o", "--output-file" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     val path = argsIter.next().toPath()
                     outputStream = lazy { Files.newOutputStream(path, CREATE, APPEND) }
                 }
                 "-O", "--output-token" -> {
-                    checkRequiredParameter(argsIter, arg)
+                    checkRequiredParameter(arg)
                     outputTokenPath = argsIter.next().toPath()
                 }
                 else -> {
@@ -148,20 +156,12 @@ object TextGeneratorCommandLine {
                                             （デフォルトは c）
                 -l, --limit <num>           生成するテキストの形態素の個数
                                             （デフォルトは 100）
-                -c, --chain-size <num>      マルコフ連鎖のチェーンサイズ
-                                            (2 以上を指定する、デフォルトは 3)
+                -c, --chain-size <num>      マルコフ連鎖で考慮する形態素の数
+                                            (デフォルトは 3)
                 -o, --output-file <file>    生成したテキストをファイルに書き込む
                                             （指定が無い場合は標準出力）
                 -O, --output-token <file>   トークンファイルを出力して終了する
         """.trimIndent())
-    }
-
-    @SuppressFBWarnings("DM_EXIT")
-    private fun checkRequiredParameter(argsIterator: Iterator<String>, name: String) {
-        if (!argsIterator.hasNext()) {
-            System.err.println("${ANSI_RED}error:$ANSI_RESET オプションには引数が必要です $name")
-            exitProcess(1)
-        }
     }
 
     private fun writeGeneratedText(tokens: List<Token>, chainSize: Int, limit: Int, output: OutputStream) {

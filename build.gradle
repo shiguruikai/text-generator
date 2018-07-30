@@ -45,9 +45,9 @@ tasks.withType(SpotBugsTask) {
 
 mainClassName = 'com.github.shiguruikai.textgenerator.TextGeneratorCommandLine'
 
-// Sudachiで発生するJVMの警告を回避するオプション
-applicationDefaultJvmArgs = ['--add-opens=java.base/java.nio=ALL-UNNAMED',
-                             '--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED']
+// Sudachiで発生するJVM（バージョン9以上のみ）の警告を抑制するオプション
+//applicationDefaultJvmArgs = ['--add-opens=java.base/java.nio=ALL-UNNAMED',
+//                             '--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED']
 
 jar {
     manifest {

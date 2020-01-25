@@ -2,13 +2,11 @@
 
 マルコフ連鎖でテキストを生成する。
 
-形態素解析器は [Sudachi](https://github.com/WorksApplications/Sudachi) を使用。
+形態素解析器は[Sudachi](https://github.com/WorksApplications/Sudachi)を使用した。
 
 ## 使い方
 
-形態素解析に必要なSudachiの辞書ファイル `system_full.dic` は自前でビルドするか、
-[リポジトリ](https://oss.sonatype.org/content/repositories/snapshots/com/worksap/nlp/sudachi/0.1.1-SNAPSHOT/) から
-`sudachi-{バージョンID}-dictionary-full.zip` をダウンロード＆解凍して入手する。
+辞書ファイルは[SudachiDict](https://github.com/WorksApplications/SudachiDict)からダウンロードしてください。
 
 ```text 
 Usage:  text-generator [options]
@@ -21,16 +19,16 @@ Usage:  text-generator [options]
 Options:
     -h, --help                  このヘルプを表示して終了する
     -s, --settings <file>       設定ファイルを指定
-                                （デフォルトはJar内部の sudachi_fulldict.json）
+                                （デフォルトは内部の sudachi_fulldict.json）
     -d, --dic-dir <dir>         辞書ファイルのディレクトリ
-                                （デフォルトはJarと同じディレクトリ）
+                                （デフォルトは同じディレクトリ）
     -m, --mode [a|b|c]          形態素分割モード
                                 （デフォルトは c）
     -l, --limit <num>           生成するテキストの形態素の個数
                                 （デフォルトは 100）
-    -c, --chain-size <num>      マルコフ連鎖のチェーンサイズ
-                                (2 以上を指定する、デフォルトは 3)
-    -o, --output-file <file>    生成したテキストをファイルに書き込む
+    -c, --chain-size <num>      マルコフ連鎖で考慮する形態素の数
+                                (デフォルトは 3)
+    -o, --output-file <file>    生成したテキストの出力ファイル
                                 （指定が無い場合は標準出力）
     -O, --output-token <file>   トークンファイルを出力して終了する
 ```

@@ -17,8 +17,8 @@ class Token internal constructor() : Externalizable {
     var partOfSpeechId: Short = 0
         private set
 
-    // イニシャライズかデシリアライズのときにハッシュコードを計算する
-    @Transient private var hashCode: Int = 0
+    @Transient
+    private var hashCode: Int = 0
 
     constructor(morpheme: Morpheme) : this() {
         this.surface = morpheme.surface()
@@ -40,10 +40,10 @@ class Token internal constructor() : Externalizable {
     }
 
     override fun equals(other: Any?): Boolean =
-            other === this || other is Token &&
-                    other.hashCode == hashCode &&
-                    other.partOfSpeechId == partOfSpeechId &&
-                    other.surface == surface
+        other === this || other is Token &&
+                other.hashCode == hashCode &&
+                other.partOfSpeechId == partOfSpeechId &&
+                other.surface == surface
 
     override fun hashCode(): Int = hashCode
 

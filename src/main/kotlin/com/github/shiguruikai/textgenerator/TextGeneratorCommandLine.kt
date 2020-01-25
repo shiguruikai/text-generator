@@ -2,8 +2,10 @@ package com.github.shiguruikai.textgenerator
 
 import com.worksap.nlp.sudachi.DictionaryFactory
 import com.worksap.nlp.sudachi.SudachiCommandLine
+import com.worksap.nlp.sudachi.Tokenizer
 import com.worksap.nlp.sudachi.Tokenizer.SplitMode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import java.io.InputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.OutputStream
@@ -16,7 +18,11 @@ import java.util.zip.DeflaterOutputStream
 import java.util.zip.InflaterInputStream
 import kotlin.math.max
 import kotlin.system.exitProcess
+import java.lang.System.`in` as stdin
+import java.lang.System.err as stderr
+import java.lang.System.out as stdout
 
+@SuppressFBWarnings("DM_EXIT")
 object TextGeneratorCommandLine {
 
     private const val ANSI_RESET = "\u001B[0m"
@@ -28,7 +34,7 @@ object TextGeneratorCommandLine {
         var dicDirPath: Path? = null
         var outputTokenPath: Path? = null
         var inputTokenPath: Path? = null
-        var outputStream: Lazy<OutputStream> = lazy { System.out }
+        var outputStream: Lazy<OutputStream> = lazy { stdout }
         var mode = SplitMode.C
         var limit = 100
         var chainSize = 3
@@ -39,35 +45,33 @@ object TextGeneratorCommandLine {
             listOf("--help")
         }.listIterator()
 
-        @SuppressFBWarnings("DM_EXIT")
-        fun checkRequiredParameter(name: String) {
+        fun checkOptionArg(name: String) {
             if (!argsIter.hasNext()) {
-                System.err.println("${ANSI_RED}error:$ANSI_RESET オプションには引数が必要です $name")
+                stderr.println("${ANSI_RED}error:$ANSI_RESET オプションには引数が必要です $name")
                 exitProcess(1)
             }
         }
 
         loop@ while (argsIter.hasNext()) {
-            val arg = argsIter.next()
-            when (arg) {
+            when (val arg = argsIter.next()) {
                 "-h", "--h", "-help", "--help" -> {
                     printHelpMessage()
                     exitProcess(0)
                 }
-                "-t", "-token" -> {
-                    checkRequiredParameter(arg)
+                "-token" -> {
+                    checkOptionArg(arg)
                     inputTokenPath = argsIter.next().toPath()
                 }
                 "-s", "--settings" -> {
-                    checkRequiredParameter(arg)
+                    checkOptionArg(arg)
                     settings = argsIter.next().toPath().toFile().readText()
                 }
                 "-d", "--dic-dir" -> {
-                    checkRequiredParameter(arg)
+                    checkOptionArg(arg)
                     dicDirPath = argsIter.next().toPath()
                 }
                 "-m", "--mode" -> {
-                    checkRequiredParameter(arg)
+                    checkOptionArg(arg)
                     mode = when (argsIter.next()) {
                         "a", "A" -> SplitMode.A
                         "b", "B" -> SplitMode.B
@@ -75,25 +79,25 @@ object TextGeneratorCommandLine {
                     }
                 }
                 "-l", "--limit" -> {
-                    checkRequiredParameter(arg)
+                    checkOptionArg(arg)
                     limit = max(0, argsIter.next().toInt())
                 }
                 "-c", "--chain-size" -> {
-                    checkRequiredParameter(arg)
+                    checkOptionArg(arg)
                     chainSize = argsIter.next().toInt()
                 }
                 "-o", "--output-file" -> {
-                    checkRequiredParameter(arg)
+                    checkOptionArg(arg)
                     val path = argsIter.next().toPath()
                     outputStream = lazy { Files.newOutputStream(path, CREATE, APPEND) }
                 }
                 "-O", "--output-token" -> {
-                    checkRequiredParameter(arg)
+                    checkOptionArg(arg)
                     outputTokenPath = argsIter.next().toPath()
                 }
                 else -> {
                     if (arg.startsWith('-')) {
-                        System.err.println("${ANSI_RED}error:$ANSI_RESET 不明なオプション $arg")
+                        stderr.println("${ANSI_RED}error:$ANSI_RESET 不明なオプション $arg")
                         exitProcess(1)
                     }
                     argsIter.previous()
@@ -122,7 +126,7 @@ object TextGeneratorCommandLine {
 
             val inputStream = when {
                 argsIter.hasNext() -> Files.newInputStream(argsIter.next().toPath())
-                System.`in`.available() != 0 -> System.`in`
+                stdin.available() != 0 -> stdin
                 else -> exitProcess(0)
             }
 
@@ -138,7 +142,8 @@ object TextGeneratorCommandLine {
     }
 
     private fun printHelpMessage() {
-        println("""
+        println(
+            """
             Usage:  text-generator [options]
                         (標準入力から生成する場合)
                     text-generator [options] <file>
@@ -149,30 +154,42 @@ object TextGeneratorCommandLine {
             Options:
                 -h, --help                  このヘルプを表示して終了する
                 -s, --settings <file>       設定ファイルを指定
-                                            （デフォルトはJar内部の sudachi_fulldict.json）
+                                            （デフォルトは内部の sudachi_fulldict.json）
                 -d, --dic-dir <dir>         辞書ファイルのディレクトリ
-                                            （デフォルトはJarと同じディレクトリ）
+                                            （デフォルトは同じディレクトリ）
                 -m, --mode [a|b|c]          形態素分割モード
                                             （デフォルトは c）
                 -l, --limit <num>           生成するテキストの形態素の個数
                                             （デフォルトは 100）
                 -c, --chain-size <num>      マルコフ連鎖で考慮する形態素の数
                                             (デフォルトは 3)
-                -o, --output-file <file>    生成したテキストをファイルに書き込む
+                -o, --output-file <file>    生成したテキストの出力ファイル
                                             （指定が無い場合は標準出力）
                 -O, --output-token <file>   トークンファイルを出力して終了する
-        """.trimIndent())
+            """.trimIndent()
+        )
     }
 
     private fun writeGeneratedText(tokens: List<Token>, chainSize: Int, limit: Int, output: OutputStream) {
         output.bufferedWriter().use { writer ->
             generateMarkovChainSequence(tokens, chainSize)
-                    .take(limit)
-                    .forEach {
-                        writer.write(it.surface)
-                    }
+                .take(limit)
+                .forEach {
+                    writer.write(it.surface)
+                }
 
             writer.newLine()
+        }
+    }
+
+    private fun createTokenList(tokenizer: Tokenizer, mode: SplitMode, inputStream: InputStream): List<Token> {
+        return inputStream.bufferedReader().useLines { sequence ->
+            sequence.fold(mutableListOf()) { acc, line ->
+                tokenizer.tokenize(mode, line).forEach { morpheme ->
+                    acc += Token(morpheme)
+                }
+                return@fold acc
+            }
         }
     }
 

@@ -8,13 +8,10 @@ fun <T : Any> generateMarkovChainSequence(src: List<T>, chainSize: Int, random: 
 
     if (src.isEmpty()) return emptySequence()
 
-    val chain = mutableMapOf<List<T>, MutableList<T>>()
-    val keySize = chainSize - 1
-    val keySequence = src.takeLast(keySize).asSequence().plus(src).windowed(keySize)
-    val valueSequence = src.asSequence()
-    keySequence.zip(valueSequence).forEach { (key, value) ->
-        chain.getOrPut(key) { mutableListOf() }.add(value)
-    }
+    val n = chainSize - 1
+    val keys = src.takeLast(n).asSequence().plus(src).windowed(n)
+    val values = src.asSequence()
+    val chain = keys.zip(values).groupBy({ it.first }, { it.second })
 
     val key = LinkedList(chain.keys.random(random))
 

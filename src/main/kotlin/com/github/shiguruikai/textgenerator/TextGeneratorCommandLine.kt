@@ -4,7 +4,6 @@ import com.worksap.nlp.sudachi.DictionaryFactory
 import com.worksap.nlp.sudachi.SudachiCommandLine
 import com.worksap.nlp.sudachi.Tokenizer
 import com.worksap.nlp.sudachi.Tokenizer.SplitMode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.InputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -22,7 +21,6 @@ import java.lang.System.`in` as stdin
 import java.lang.System.err as stderr
 import java.lang.System.out as stdout
 
-@SuppressFBWarnings("DM_EXIT")
 object TextGeneratorCommandLine {
 
     private const val ANSI_RESET = "\u001B[0m"
@@ -39,11 +37,7 @@ object TextGeneratorCommandLine {
         var limit = 100
         var chainSize = 3
 
-        val argsIter = if (args.isNotEmpty()) {
-            args.toList()
-        } else {
-            listOf("--help")
-        }.listIterator()
+        val argsIter = args.toList().listIterator()
 
         fun checkOptionArg(name: String) {
             if (!argsIter.hasNext()) {
@@ -142,8 +136,7 @@ object TextGeneratorCommandLine {
     }
 
     private fun printHelpMessage() {
-        println(
-            """
+        println("""
             Usage:  text-generator [options]
                         (標準入力から生成する場合)
                     text-generator [options] <file>
@@ -173,23 +166,18 @@ object TextGeneratorCommandLine {
     private fun writeGeneratedText(tokens: List<Token>, chainSize: Int, limit: Int, output: OutputStream) {
         output.bufferedWriter().use { writer ->
             generateMarkovChainSequence(tokens, chainSize)
-                .take(limit)
-                .forEach {
-                    writer.write(it.surface)
-                }
+                    .take(limit)
+                    .forEach {
+                        writer.write(it.surface)
+                    }
 
             writer.newLine()
         }
     }
 
     private fun createTokenList(tokenizer: Tokenizer, mode: SplitMode, inputStream: InputStream): List<Token> {
-        return inputStream.bufferedReader().useLines { sequence ->
-            sequence.fold(mutableListOf()) { acc, line ->
-                tokenizer.tokenize(mode, line).forEach { morpheme ->
-                    acc += Token(morpheme)
-                }
-                return@fold acc
-            }
+        return inputStream.bufferedReader().useLines { lines ->
+            lines.map { tokenizer.tokenize(mode, it) }.flatten().map(::Token).toList()
         }
     }
 
